@@ -279,6 +279,8 @@ pipe_ret_t TcpServer::close() {
             } catch (const std::runtime_error& error) {
                 return pipe_ret_t::failure(error.what());
             }
+
+            delete client;
         }
         _clients.clear();
     }
