@@ -51,7 +51,7 @@ void TcpServer::removeDeadClients() {
             } while (clientToRemove != _clients.end());
         }
 
-        sleep(2);
+        sleep(1);
     }
 }
 
