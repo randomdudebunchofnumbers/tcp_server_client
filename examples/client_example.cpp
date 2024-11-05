@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <csignal>
+#include <sstream>
 #include "../include/tcp_client.h"
 
 TcpClient client;
@@ -25,7 +26,7 @@ void sig_exit(int s)
 
 // observer callback. will be called for every new message received by the server
 void onIncomingMsg(const char * msg, size_t size) {
-	std::cout << "Got msg from server: " << msg << "\n";
+	std::cout << "Got msg from server: size " << size << " message " << std::string(msg, size) << std::endl;//"\n";
 }
 
 // observer callback. will be called when server disconnects
@@ -36,7 +37,7 @@ void onDisconnection(const pipe_ret_t & ret) {
 void printMenu() {
     std::cout << "select one of the following options: \n" <<
                  "1. send message to server\n" <<
-                 "2. close client and exit\n";
+                 "2. close client and exit\n" << std::endl;
 }
 
 int getMenuSelection() {
@@ -59,9 +60,25 @@ bool handleMenuSelection(int selection) {
     }
     switch (selection) {
         case 1: { // send message to server
-            std::cout << "enter message to send:\n";
-            std::string message;
-            std::cin >> message;
+            std::cout << "enter method to send:\n";
+            std::string method;
+            std::cin >> method;
+            
+            std::cout << "enter parameters to send:\n";
+            std::string parameters;
+            std::cin >> parameters;
+
+            std::stringstream messageAsStream;
+            if(parameters != "n")
+                messageAsStream << R"({"jsonrpc":"2.0","method":")" << method << R"(","params":)" << parameters << R"(,"id":1})" << '\n';
+            else
+                messageAsStream << R"({"jsonrpc":"2.0","method":")" << method << R"(","id":1})" << '\n';
+
+            const auto message(messageAsStream.str());
+            std::cout << message << std::endl;
+
+            //std::string message("{\"jsonrpc\":\"2.0\",\"method\":\"service/IsAutoAcceptEnabled\",\"params\":null,\"id\":1}\n");
+            //std::cin >> message;
             pipe_ret_t sendRet = client.sendMsg(message.c_str(), message.size());
             if (!sendRet.isSuccessful()) {
                 std::cout << "Failed to send message: " << sendRet.message() << "\n";
@@ -101,7 +118,7 @@ int main() {
 	// connect client to an open server
 	bool connected = false;
     while (!connected) {
-        pipe_ret_t connectRet = client.connectTo("127.0.0.1", 65123);
+        pipe_ret_t connectRet = client.connectTo("127.0.0.1", 3393);
         connected = connectRet.isSuccessful();
         if (connected) {
             std::cout << "Client connected successfully\n";
