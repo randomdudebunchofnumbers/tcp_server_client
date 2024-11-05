@@ -51,7 +51,7 @@ void TcpServer::removeDeadClients() {
             } while (clientToRemove != _clients.end());
         }
 
-        sleep(2);
+        sleep(1);
     }
 }
 
@@ -279,6 +279,8 @@ pipe_ret_t TcpServer::close() {
             } catch (const std::runtime_error& error) {
                 return pipe_ret_t::failure(error.what());
             }
+
+            delete client;
         }
         _clients.clear();
     }
